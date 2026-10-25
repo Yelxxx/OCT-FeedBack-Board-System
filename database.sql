@@ -52,29 +52,16 @@ CREATE TABLE feedbacks (
   CONSTRAINT fk_feedback_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Comments & Nested Replies
+-- Comments (two-way thread between reporter & target staff/admin)
 CREATE TABLE comments (
   id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   feedback_id INT UNSIGNED NOT NULL,
-  parent_id   INT UNSIGNED DEFAULT NULL,
   user_id     INT UNSIGNED NOT NULL,
   message     TEXT         NOT NULL,
   visibility  ENUM('public','private') NOT NULL DEFAULT 'public',
   created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_comment_feedback FOREIGN KEY (feedback_id) REFERENCES feedbacks(id) ON DELETE CASCADE,
-  CONSTRAINT fk_comment_parent   FOREIGN KEY (parent_id)   REFERENCES comments(id)  ON DELETE CASCADE,
   CONSTRAINT fk_comment_user     FOREIGN KEY (user_id)     REFERENCES users(id)     ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Feedback Support / Endorsements ("Support" vote feature)
-CREATE TABLE feedback_endorsements (
-  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  feedback_id INT UNSIGNED NOT NULL,
-  user_id     INT UNSIGNED NOT NULL,
-  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_feedback_user (feedback_id, user_id),
-  CONSTRAINT fk_endorse_feedback FOREIGN KEY (feedback_id) REFERENCES feedbacks(id) ON DELETE CASCADE,
-  CONSTRAINT fk_endorse_user     FOREIGN KEY (user_id)     REFERENCES users(id)     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Password reset tokens
@@ -121,50 +108,23 @@ CREATE TABLE announcements (
   CONSTRAINT fk_announcement_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ---------------------------------------------------------------------------
--- 5 BASELINE USER ACCOUNTS (One clean account for each of the 5 roles)
---
--- 1. Super Admin:
---    Email: admin@oct.edu.ph
---    Password: superadmin123
---    Role: super_admin (Overall oversight across all fields)
---
--- 2. Department Head / Admin:
---    Email: marygrace.piattos@oct.edu.ph
---    Password: admin123
---    Role: admin (Head of Maintenance / Facilities)
---
--- 3. Staff / Maintenance:
---    Email: peter.parker@oct.edu.ph
---    Password: staff123
---    Role: staff (Handles canteen, facilities, repairs, non-academic tasks)
---
--- 4. Faculty / Professor:
---    Email: lebron.james@oct.edu.ph
---    Password: faculty123
---    Role: faculty (Instructor/Professor)
---
--- 5. Student:
---    Email: yel.mendoza@oct.edu.ph
---    Password: student123
---    Role: student (Student body)
--- ---------------------------------------------------------------------------
+
 
 INSERT INTO users (id, id_number, name, email, password, department, role, field_scope) VALUES
-(1, 'ADM-0001', 'System Administrator', 'admin@oct.edu.ph',
+(1, 'ADM-0001', 'System Administrator', 'superadmin@oct.edu.ph',
  '$2y$12$7hIPNB5r6zT4SHO.UHpguOiGuLWspWmkPky.2ocSiE0s/p/sbq0Le',
  'Office of the President', 'super_admin', NULL),
 
-(2, 'DPT-0001', 'Engr. Mary Grace Piattos (Dept Head)', 'marygrace.piattos@oct.edu.ph',
- '$2y$12$3kU4RJDUlfeWiPBuK/mfsO3IK1/jQUPfcxLwZpecFv7NqO7e8/Deu',
+(2, 'DPT-0001', 'Engr. Grace Mendez (Dept Head)', 'depthead.maintenance@oct.edu.ph',
+ '$2y$12$7hIPNB5r6zT4SHO.UHpguOiGuLWspWmkPky.2ocSiE0s/p/sbq0Le',
  'Maintenance Office', 'admin', 'maintenance'),
 
-(3, 'STF-0001', 'Peter Parker (Maintenance Staff)', 'peter.parker@oct.edu.ph',
- '$2y$12$JXh0WpxqZFZg5d0MIu8w6uMSUuszVd6gPK9txZ0QTO.yDj0UAicyi',
+(3, 'STF-0001', 'Marco Torres (Maintenance Staff)', 'staff.maintenance@oct.edu.ph',
+ '$2y$12$iC7mTDUGRo/gSJpBbziPg.faZ13d2UVAFVCdjP49vfbVoGTh/EjPK',
  'Maintenance Department', 'staff', NULL),
 
-(4, 'FAC-0001', 'Prof. LeBron James', 'lebron.james@oct.edu.ph',
- '$2y$12$G3DlCCbtBHsbHea3wOFdlecjhRMUmjtSRo/XlKAj8Zqj.xeIl5QaS',
+(4, 'FAC-0001', 'Prof. Pedro Reyes', 'prof.reyes@oct.edu.ph',
+ '$2y$12$iC7mTDUGRo/gSJpBbziPg.faZ13d2UVAFVCdjP49vfbVoGTh/EjPK',
  'College of Engineering', 'faculty', NULL),
 
 (5, 'STD-0001', 'Yel Mendoza', 'yel.mendoza@oct.edu.ph',
